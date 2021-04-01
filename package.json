@@ -1,0 +1,26 @@
+{
+  "name": "pedigree-analysis",
+  "version": "1.0.0",
+  "description": "Analyzes dominance, individuals' phenotype and genotype of the disease based on pedigree",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humanscape/pedigree-analysis.git"
+  },
+  "keywords": [
+    "pedigree",
+    "disease",
+    "analysis",
+    "phenotype",
+    "genotype"
+  ],
+  "author": "humanscape-james",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/humanscape/pedigree-analysis/issues"
+  },
+  "homepage": "https://github.com/humanscape/pedigree-analysis#readme"
+}
