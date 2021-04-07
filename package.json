@@ -25,6 +25,18 @@
   "homepage": "https://github.com/humanscape/pedigree-analysis#readme",
   "dependencies": {},
   "devDependencies": {
-    "@humanscape/eslint-config": "^1.0.1"
+    "@humanscape/eslint-config": "^1.0.1",
+    "eslint": "^7.23.0",
+    "prettier": "^2.2.1"
+  },
+  "eslintConfig": {
+    "extends": "@humanscape",
+    "env": {
+      "es2021": true,
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2021
+    }
   }
 }
