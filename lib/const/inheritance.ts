@@ -3,7 +3,7 @@ const AR = 'AR';
 const XD = 'XD';
 const XR = 'XR';
 
-module.exports = {
+export default {
   AUTOSOMAL_DOMINANT: AD,
   AD,
   AUTOSOMAL_RECESSIVE: AR,
@@ -12,7 +12,7 @@ module.exports = {
   XD,
   X_RECESSIVE: XR,
   XR,
-  isAutosomal: (inheritance) => inheritance.startsWith('A'),
-  isDominant: (inheritance) => inheritance.endsWith('D'),
+  isAutosomal: (inheritance: string) => inheritance.startsWith('A'),
+  isDominant: (inheritance: string) => inheritance.endsWith('D'),
   choices: new Set([AD, AR, XD, XR]),
 };
