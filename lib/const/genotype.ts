@@ -3,9 +3,9 @@ import genders from './gender';
 const { MALE, FEMALE } = genders;
 
 // use '|' so that 'A' < 'a' < '|' (charCode)
-const DOMINANT_ALLELE = 'A';
-const RECESSIVE_ALLELE = 'a';
-const NULL_ALLELE = '|';
+const DOMINANT_ALLELE = 'A' as const;
+const RECESSIVE_ALLELE = 'a' as const;
+const NULL_ALLELE = '|' as const;
 
 export type Allele =
   | typeof DOMINANT_ALLELE
@@ -54,6 +54,8 @@ const RECESSIVE = Object.freeze([
 ]) as Genotype[];
 
 export default Object.freeze({
+  DOMINANT_ALLELE,
+  RECESSIVE_ALLELE,
   HOMOZYGOUS_DOMINANT,
   HETEROZYGOUS,
   HOMOZYGOUS_RECESSIVE,
