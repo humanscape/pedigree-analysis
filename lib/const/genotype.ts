@@ -1,26 +1,77 @@
+import genders from './gender';
+
+const { MALE, FEMALE } = genders;
+
 // use '|' so that 'A' < 'a' < '|' (charCode)
-const HOMOZYGOUS_DOMINANT = 'AA';
-const HETEROZYGOUS = 'Aa';
-const HOMOZYGOUS_RECESSIVE = 'aa';
-const HEMIZYGOUS_DOMINANT = 'A|';
-const HEMIZYGOUS_RECESSIVE = 'a|';
+const DOMINANT_ALLELE = 'A' as const;
+const RECESSIVE_ALLELE = 'a' as const;
+const NULL_ALLELE = '|' as const;
 
-const AUTOSOMAL = [HOMOZYGOUS_DOMINANT, HETEROZYGOUS, HOMOZYGOUS_RECESSIVE];
-const X_FEMALE = AUTOSOMAL;
-const X_MALE = [HEMIZYGOUS_DOMINANT, HEMIZYGOUS_RECESSIVE];
-const DOMINANT = [HOMOZYGOUS_DOMINANT, HETEROZYGOUS, HEMIZYGOUS_DOMINANT];
-const RECESSIVE = [HOMOZYGOUS_RECESSIVE, HEMIZYGOUS_RECESSIVE];
+export type Allele =
+  | typeof DOMINANT_ALLELE
+  | typeof RECESSIVE_ALLELE
+  | typeof NULL_ALLELE;
 
-export default {
+const HOMOZYGOUS_DOMINANT = `${DOMINANT_ALLELE}${DOMINANT_ALLELE}` as const;
+const HETEROZYGOUS = `${DOMINANT_ALLELE}${RECESSIVE_ALLELE}` as const;
+const HOMOZYGOUS_RECESSIVE = `${RECESSIVE_ALLELE}${RECESSIVE_ALLELE}` as const;
+const HEMIZYGOUS_DOMINANT = `${DOMINANT_ALLELE}${NULL_ALLELE}` as const;
+const HEMIZYGOUS_RECESSIVE = `${RECESSIVE_ALLELE}${NULL_ALLELE}` as const;
+const NULL = `${NULL_ALLELE}${NULL_ALLELE}` as const; // for example, women do not have Y chromosome
+
+const genotypeList = [
   HOMOZYGOUS_DOMINANT,
   HETEROZYGOUS,
   HOMOZYGOUS_RECESSIVE,
   HEMIZYGOUS_DOMINANT,
   HEMIZYGOUS_RECESSIVE,
+  NULL,
+] as const;
+const choices = new Set(genotypeList);
+
+export type Genotype = typeof genotypeList[number];
+
+const AUTOSOMAL = Object.freeze([
+  HOMOZYGOUS_DOMINANT,
+  HETEROZYGOUS,
+  HOMOZYGOUS_RECESSIVE,
+]) as Genotype[];
+const X_FEMALE = AUTOSOMAL;
+const X_MALE = Object.freeze([
+  HEMIZYGOUS_DOMINANT,
+  HEMIZYGOUS_RECESSIVE,
+]) as Genotype[];
+const Y_FEMALE = Object.freeze([NULL]) as Genotype[];
+const Y_MALE = X_MALE;
+const DOMINANT = Object.freeze([
+  HOMOZYGOUS_DOMINANT,
+  HETEROZYGOUS,
+  HEMIZYGOUS_DOMINANT,
+]) as Genotype[];
+const RECESSIVE = Object.freeze([
+  HOMOZYGOUS_RECESSIVE,
+  HEMIZYGOUS_RECESSIVE,
+]) as Genotype[];
+
+export default Object.freeze({
+  DOMINANT_ALLELE,
+  RECESSIVE_ALLELE,
+  HOMOZYGOUS_DOMINANT,
+  HETEROZYGOUS,
+  HOMOZYGOUS_RECESSIVE,
+  HEMIZYGOUS_DOMINANT,
+  HEMIZYGOUS_RECESSIVE,
+  NULL,
   AUTOSOMAL,
+  Y_FEMALE,
+  Y_MALE,
   X_FEMALE,
   X_MALE,
   DOMINANT,
   RECESSIVE,
-  choices: new Set([...AUTOSOMAL, ...X_FEMALE, ...X_MALE]),
-};
+  isValid: (genotype: string) => choices.has(genotype as Genotype),
+  byGender: {
+    [MALE]: X_MALE,
+    [FEMALE]: X_FEMALE,
+  },
+});

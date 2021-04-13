@@ -1,10 +1,10 @@
-import Disease from './disease';
+import DiseaseFactory from './disease';
 import FamilyMember from './family-member';
 import Pedigree from './pedigree';
-import constants from './const';
+import * as constants from './const';
 
 const PedigreeAnalysis = {
-  Disease,
+  DiseaseFactory,
   FamilyMember,
   Pedigree,
   ...constants,
