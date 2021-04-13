@@ -16,26 +16,23 @@ class AutosomalDisease extends CommonDisease {
   }
 
   hasValidGenotypes({ genotypes: list }: { genotypes: Genotype[] }) {
-    if (Array.isArray(list) && list.length) {
-      const genotypeSet = new Set(list);
-      if (genotypeSet.size === list.length) {
-        AutosomalDisease.validGenotypes.forEach((genotype) =>
-          genotypeSet.delete(genotype),
-        );
-        return genotypeSet.size === 0;
-      }
-    }
-    return false;
+    if (!Array.isArray(list) || !list.length) return false;
+
+    const genotypeSet = new Set(list);
+    if (genotypeSet.size !== list.length) return false; // duplicate check
+
+    AutosomalDisease.validGenotypes.forEach((genotype) =>
+      genotypeSet.delete(genotype),
+    );
+    return genotypeSet.size === 0; // if not 0, it has invalid genotype
   }
 
   getPossibleGenotypes({ phenotype }: { phenotype: Phenotype }) {
-    const filter = phenotype
-      ? (genotype: Genotype) => super.hasDisease(genotype)
-      : phenotype === false
-      ? (genotype: Genotype) => !super.hasDisease(genotype)
-      : null;
-    if (filter) return AutosomalDisease.validGenotypes.filter(filter);
-    return AutosomalDisease.validGenotypes;
+    const { validGenotypes } = AutosomalDisease;
+    if (typeof phenotype !== 'boolean') return validGenotypes;
+    return validGenotypes.filter(
+      (genotype: Genotype) => super.hasDisease(genotype) === phenotype,
+    );
   }
 }
 

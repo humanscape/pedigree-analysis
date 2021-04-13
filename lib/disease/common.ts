@@ -129,8 +129,9 @@ abstract class CommonDisease implements Disease {
       ),
     ).reduce(
       (diseaseProbability, [genotype, probability]) =>
-        diseaseProbability +
-        (Number(this.hasDisease(genotype as Genotype)) && probability),
+        this.hasDisease(genotype as Genotype)
+          ? diseaseProbability + probability
+          : diseaseProbability,
       0,
     );
   }
