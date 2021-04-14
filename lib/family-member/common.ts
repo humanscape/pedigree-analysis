@@ -96,7 +96,7 @@ class FamilyMember {
 
     const { id } = member;
     if (getRelationship(this, id))
-      throw new Error(`${relationship} with given id ${id} already exists.`);
+      throw new Error(`${relationship} with given id '${id}' already exists.`);
 
     if (member.mom) throw new Error(`${relationship} already has parents.`);
   }
@@ -106,7 +106,7 @@ class FamilyMember {
       throw new Error(`given id '${id}' of ${relationship} is invalid.`);
 
     if (!genderByRelationship[relationship].getRelationship(this, id))
-      throw new Error(`${relationship} with given id ${id} does not exist.`);
+      throw new Error(`${relationship} with given id '${id}' does not exist.`);
   }
 
   _addChild(relationship: Child, child: FamilyMember) {
