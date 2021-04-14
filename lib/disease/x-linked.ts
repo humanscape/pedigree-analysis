@@ -12,8 +12,8 @@ class XLinkedDisease extends CommonDisease {
   static _validGenotypes = genotypes.byGender;
 
   getValidGenotypes({ gender }: { gender: Gender }) {
-    const list = XLinkedDisease.validGenotypes[gender];
-    if (!list) throw new Error(`gender ${gender} is invalid.`);
+    const list = XLinkedDisease._validGenotypes[gender];
+    if (!list) throw new Error(`gender '${gender}' is invalid.`);
     return list;
   }
 
