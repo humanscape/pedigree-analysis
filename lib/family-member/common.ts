@@ -111,6 +111,8 @@ class FamilyMember {
     if (!this.spouse)
       throw new Error(`cannot have ${relationship} before getting married.`);
 
+    if (child.mom) throw new Error(`${relationship} already have parents.`);
+
     const { id } = child;
     this._relationships[`${relationship}s` as const][id] = child;
     if (this._isMale) {
