@@ -97,6 +97,8 @@ class FamilyMember {
     const { id } = member;
     if (getRelationship(this, id))
       throw new Error(`${relationship} with given id ${id} already exists.`);
+
+    if (member.mom) throw new Error(`${relationship} already has parents.`);
   }
 
   _validateExistence(relationship: Child | Sibling, id: Id) {
@@ -110,8 +112,6 @@ class FamilyMember {
   _addChild(relationship: Child, child: FamilyMember) {
     if (!this.spouse)
       throw new Error(`cannot have ${relationship} before getting married.`);
-
-    if (child.mom) throw new Error(`${relationship} already have parents.`);
 
     const { id } = child;
     this._relationships[`${relationship}s` as const][id] = child;
@@ -159,7 +159,7 @@ class FamilyMember {
       [Sibling, FamilyMember],
     ];
 
-    this._validateMember(relationship, sibling); // throws if this.mom is undefined
+    this._validateMember(relationship, sibling);
     if (!this.mom) throw new Error(`must have parent to have ${relationship}.`);
     (this.mom as FamilyMember)._addChild(
       relationship === 'brother' ? 'son' : 'daughter',
