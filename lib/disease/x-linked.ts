@@ -9,7 +9,7 @@ import type { Phenotype } from './common';
  * @class
  */
 class XLinkedDisease extends CommonDisease {
-  static validGenotypes = genotypes.byGender;
+  static _validGenotypes = genotypes.byGender;
 
   getValidGenotypes({ gender }: { gender: Gender }) {
     const list = XLinkedDisease.validGenotypes[gender];

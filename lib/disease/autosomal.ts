@@ -9,10 +9,10 @@ import type { Phenotype } from './common';
  * @class
  */
 class AutosomalDisease extends CommonDisease {
-  static validGenotypes = genotypes.AUTOSOMAL;
+  static _validGenotypes = genotypes.AUTOSOMAL;
 
   getValidGenotypes() {
-    return AutosomalDisease.validGenotypes;
+    return AutosomalDisease._validGenotypes;
   }
 
   hasValidGenotypes({ genotypes: list }: { genotypes: Genotype[] }) {
@@ -21,14 +21,14 @@ class AutosomalDisease extends CommonDisease {
     const genotypeSet = new Set(list);
     if (genotypeSet.size !== list.length) return false; // duplicate check
 
-    AutosomalDisease.validGenotypes.forEach((genotype) =>
+    AutosomalDisease._validGenotypes.forEach((genotype) =>
       genotypeSet.delete(genotype),
     );
     return genotypeSet.size === 0; // if not 0, it has invalid genotype
   }
 
   getPossibleGenotypes({ phenotype }: { phenotype: Phenotype }) {
-    const { validGenotypes } = AutosomalDisease;
+    const { _validGenotypes: validGenotypes } = AutosomalDisease;
     if (typeof phenotype !== 'boolean') return validGenotypes;
     return validGenotypes.filter(
       (genotype: Genotype) => super.hasDisease(genotype) === phenotype,
