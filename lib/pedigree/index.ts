@@ -5,6 +5,20 @@ import FamilyMemberFactory from '../family-member';
 import type { Genotype, Allele } from '../const';
 import type { FamilyMember } from '../family-member';
 
+type ChildrenInfo = {
+  genotype: {
+    mother: Genotype;
+    father: Genotype;
+  };
+  son: ChildrenSubInfoByGender;
+  daughter: ChildrenSubInfoByGender;
+};
+
+type ChildrenSubInfoByGender = {
+  probabilities: Probabilities; // probabilities of children having each genotype
+  disease: number; // probability of children having disease
+};
+
 type Probabilities = {
   [genotype: string]: number; // type of genotype is Genotype
 };
@@ -42,6 +56,98 @@ class Pedigree {
     (motherAllele > fatherAllele // sort alleles ASC
       ? `${fatherAllele}${motherAllele}`
       : `${motherAllele}${fatherAllele}`) as Genotype;
+
+  static _calculateAutosomalProbabilities(
+    motherGenotypes: Genotype[],
+    fatherGenotypes: Genotype[],
+    disease: CommonDisease, // use this for only AutosomalDisease
+  ) {
+    // pedigree analysis does not support aneuploidy yet
+    const cases = 4; // motherGenotype.length * fatherGenotype.length;
+
+    return motherGenotypes.map((motherGenotype) =>
+      fatherGenotypes.map((fatherGenotype) => {
+        const probabilities = {} as Probabilities;
+        [...motherGenotype].forEach((motherAllele) =>
+          [...fatherGenotype].forEach((fatherAllele) => {
+            const genotype = Pedigree._getGenotype(
+              fatherAllele as Allele,
+              motherAllele as Allele,
+            );
+            if (probabilities[genotype] === undefined)
+              probabilities[genotype] = 0;
+            probabilities[genotype] += 1 / cases;
+          }),
+        );
+        const subInfo = {
+          probabilities,
+          disease: Pedigree._calculateDisease(probabilities, disease),
+        };
+
+        return {
+          genotype: { mother: motherGenotype, father: fatherGenotype },
+          son: subInfo,
+          daughter: subInfo,
+        } as ChildrenInfo;
+      }),
+    );
+  }
+
+  static _calculateSexLinkedProbabilities(
+    motherGenotypes: Genotype[],
+    fatherGenotypes: Genotype[],
+    disease: CommonDisease, // use this for only XLinkedDisease
+  ) {
+    // pedigree analysis does not support sex chromosome aneuploidy yet
+    /**
+     * const countY = fatherGenotype.match(
+     * new RegExp(genotypes.NULL_ALLELE, 'g'),
+     * )?.length as number;
+     */
+    const cases = {
+      son: 2, // motherGenotype.length * countY,
+      daughter: 2, // motherGenotype.length * (fatherGenotype.length - countY),
+    };
+
+    return motherGenotypes.map((motherGenotype) =>
+      fatherGenotypes.map((fatherGenotype) => {
+        const childrenInfo = {
+          genotype: { mother: motherGenotype, father: fatherGenotype },
+          son: { probabilities: {} },
+          daughter: { probabilities: {} },
+        } as ChildrenInfo;
+
+        [...motherGenotype].forEach((motherAllele) =>
+          [...fatherGenotype].forEach((fatherAllele) => {
+            const genotype = Pedigree._getGenotype(
+              fatherAllele as Allele,
+              motherAllele as Allele,
+            );
+            const key =
+              genotype.indexOf(genotypes.NULL_ALLELE) === 1
+                ? 'son' // *_
+                : 'daughter'; // ** (X-linked) or __ (Y-linked)
+            const { probabilities } = childrenInfo[key];
+            if (probabilities[genotype] === undefined)
+              probabilities[genotype] = 0;
+            probabilities[genotype] += 1 / cases[key];
+          }),
+        );
+
+        childrenInfo.son.disease = Pedigree._calculateDisease(
+          childrenInfo.son.probabilities,
+          disease,
+        );
+        childrenInfo.daughter.disease = Pedigree._calculateDisease(
+          childrenInfo.daughter.probabilities,
+          disease,
+        );
+
+        return childrenInfo;
+      }),
+    );
+  }
+
   _analyze(target: FamilyMember) {
     const { _disease } = this;
     const { mom, dad } = target as {
