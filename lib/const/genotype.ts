@@ -32,14 +32,14 @@ const choices = new Set(genotypeList);
 export type Genotype = typeof genotypeList[number];
 
 const AUTOSOMAL = Object.freeze([
-  HOMOZYGOUS_DOMINANT,
-  HETEROZYGOUS,
   HOMOZYGOUS_RECESSIVE,
+  HETEROZYGOUS,
+  HOMOZYGOUS_DOMINANT,
 ]) as Genotype[];
 const X_FEMALE = AUTOSOMAL;
 const X_MALE = Object.freeze([
-  HEMIZYGOUS_DOMINANT,
   HEMIZYGOUS_RECESSIVE,
+  HEMIZYGOUS_DOMINANT,
 ]) as Genotype[];
 const Y_FEMALE = Object.freeze([NULL]) as Genotype[];
 const Y_MALE = X_MALE;
@@ -56,6 +56,7 @@ const RECESSIVE = Object.freeze([
 export default Object.freeze({
   DOMINANT_ALLELE,
   RECESSIVE_ALLELE,
+  NULL_ALLELE,
   HOMOZYGOUS_DOMINANT,
   HETEROZYGOUS,
   HOMOZYGOUS_RECESSIVE,
