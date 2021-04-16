@@ -1,7 +1,9 @@
 import { genotypes } from '../const';
-import type { Genotype } from '../const';
-import CommonDisease from './common';
-import type { Phenotype } from './common';
+import CommonDisease, { MAX, MIN, LIMIT, throwRangeError } from './common';
+import type { DiseaseAlleleCountRange, ParentRanges } from './common';
+import type { FamilyMember } from '../family-member';
+
+const limit = 2;
 
 /**
  * Class representing an autosomal disease

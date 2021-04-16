@@ -1,9 +1,18 @@
 import { inheritances, genotypes } from '../const';
-import type { Allele, Gender, Genotype, Inheritance } from '../const';
+import type { Allele, Genotype, Inheritance } from '../const';
+import type { FamilyMember } from '../family-member';
 
+export const MIN = 0;
+export const MAX = 1;
+export const LIMIT = 2;
+export const throwRangeError = () => {
+  throw new Error('range[MAX] cannot be less than range[MIN]');
 };
 
 export type Phenotype = boolean | null;
+
+export type DiseaseAlleleCountRange = [number, number, number]; // [min, max, limit]
+export type ParentRanges = [DiseaseAlleleCountRange, DiseaseAlleleCountRange]; // [father, mother]
 
 export interface Disease {
   name: string;

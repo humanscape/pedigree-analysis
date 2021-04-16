@@ -1,7 +1,8 @@
 import { genotypes } from '../const';
-import type { Gender, Genotype } from '../const';
-import CommonDisease from './common';
-import type { Phenotype } from './common';
+import CommonDisease, { MAX, MIN, throwRangeError } from './common';
+import AutosomalDisease from './autosomal';
+import type { DiseaseAlleleCountRange, ParentRanges } from './common';
+import type { FamilyMember } from '../family-member';
 
 /**
  * Class representing a X-linked disease
