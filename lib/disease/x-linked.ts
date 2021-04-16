@@ -9,11 +9,11 @@ import type { Phenotype } from './common';
  * @class
  */
 class XLinkedDisease extends CommonDisease {
-  static validGenotypes = genotypes.byGender;
+  static _validGenotypes = genotypes.byGender;
 
   getValidGenotypes({ gender }: { gender: Gender }) {
-    const list = XLinkedDisease.validGenotypes[gender];
-    if (!list) throw new Error(`gender ${gender} is invalid.`);
+    const list = XLinkedDisease._validGenotypes[gender];
+    if (!list) throw new Error(`gender '${gender}' is invalid.`);
     return list;
   }
 
@@ -24,16 +24,15 @@ class XLinkedDisease extends CommonDisease {
     gender: Gender;
     genotypes: Genotype[];
   }) {
-    if (Array.isArray(list) && list.length) {
-      const genotypeSet = new Set(list);
-      if (genotypeSet.size === list.length) {
-        (XLinkedDisease.validGenotypes[gender] ?? []).forEach((genotype) =>
-          genotypeSet.delete(genotype),
-        );
-        return genotypeSet.size === 0;
-      }
-    }
-    return false;
+    if (!Array.isArray(list) || !list.length) return false;
+
+    const genotypeSet = new Set(list);
+    if (genotypeSet.size !== list.length) return false;
+
+    (XLinkedDisease._validGenotypes[gender] ?? []).forEach((genotype) =>
+      genotypeSet.delete(genotype),
+    );
+    return genotypeSet.size === 0; // if not 0, has invalid genotypes
   }
 
   getPossibleGenotypes({

@@ -1,7 +1,9 @@
 import { inheritances } from '../const';
-import type { Inheritance } from '../const';
+import CommonDisease from './common';
 import AutosomalDisease from './autosomal';
 import XLinkedDisease from './x-linked';
+
+import type { Inheritance } from '../const';
 
 export type { Disease, Phenotype } from './common';
 
@@ -12,8 +14,10 @@ export type { Disease, Phenotype } from './common';
  * @returns {(AutosomalDisease|XLinkedDisease)}
  */
 const createDisease = (name: string, inheritance: Inheritance) => {
+  if (typeof name !== 'string')
+    throw new Error('name of disease must be string.');
   if (!inheritances.isValid(inheritance))
-    throw new Error(`Provided inheritance mode '${inheritance}' is invalid.`);
+    throw new Error(`provided inheritance mode '${inheritance}' is invalid.`);
   return new (inheritances.isAutosomal(inheritance)
     ? AutosomalDisease
     : XLinkedDisease)(name, inheritance);
@@ -25,6 +29,5 @@ const createDisease = (name: string, inheritance: Inheritance) => {
  */
 export default Object.freeze({
   create: createDisease,
-  _isInstance: (disease: Object) =>
-    disease instanceof AutosomalDisease || disease instanceof XLinkedDisease,
+  _isInstance: (disease: Object) => disease instanceof CommonDisease,
 });
