@@ -44,7 +44,7 @@ class XLinkedDisease extends CommonDisease {
   ) => {
     if (sonRange[MIN] === 1) {
       if (!mayInheritAllele(motherRange))
-        throw new Error('son has disease alleles where mother does not.');
+        throw new Error('son has disease allele where mother does not.');
       shouldHaveDiseaseAllele(motherRange);
       return;
     }
