@@ -28,6 +28,30 @@ abstract class CommonDisease implements Disease {
 
   _isDominant: boolean;
 
+  abstract _getRangeFromPhenotype: (
+    member: FamilyMember,
+  ) => DiseaseAlleleCountRange;
+
+  abstract _updateRangeFromParents: (
+    parentRanges: ParentRanges,
+    childRange: DiseaseAlleleCountRange,
+    { _isMale }: FamilyMember,
+  ) => void;
+
+  abstract _updateRangeFromSon: (
+    parentRanges: ParentRanges,
+    sonRange: DiseaseAlleleCountRange,
+  ) => void;
+
+  abstract _updateRangeFromDaughter: (
+    parentRanges: ParentRanges,
+    daughterRange: DiseaseAlleleCountRange,
+  ) => void;
+
+  abstract _getGenotypesFromRange: (
+    range: DiseaseAlleleCountRange,
+    { gender }: FamilyMember,
+  ) => Genotype[];
 
   /**
    * Creates an abstract disease with name and inheritance
