@@ -24,7 +24,6 @@ class Pedigree {
 
     this._disease = disease;
     this._target = target;
-    this._genotypes = {};
   }
 
   static _calculateDisease = (
@@ -43,6 +42,48 @@ class Pedigree {
     (motherAllele > fatherAllele // sort alleles ASC
       ? `${fatherAllele}${motherAllele}`
       : `${motherAllele}${fatherAllele}`) as Genotype;
+  _analyze(target: FamilyMember) {
+    const { _disease } = this;
+    const { mom, dad } = target as {
+      mom: FamilyMember;
+      dad: FamilyMember;
+    };
+    const parents = [dad, mom];
+    const parentRanges = [
+      _disease._getRangeFromPhenotype(dad),
+      _disease._getRangeFromPhenotype(mom),
+    ] as ParentRanges;
+
+    // analyze from children
+    Object.values(mom.sons).forEach((son) =>
+      _disease._updateRangeFromSon(
+        parentRanges,
+        _disease._getRangeFromPhenotype(son),
+      ),
+    );
+    Object.values(dad.daughters).forEach((daughter) =>
+      _disease._updateRangeFromDaughter(
+        parentRanges,
+        _disease._getRangeFromPhenotype(daughter),
+      ),
+    );
+
+    // analyze from parents
+    parentRanges.forEach((parentRange, index) => {
+      const parent = parents[index];
+      if (parent.mom) {
+        const grandParentRanges = this._analyze(parent);
+        _disease._updateRangeFromParents(
+          grandParentRanges,
+          parentRange,
+          parent,
+        );
+      }
+    });
+
+    return parentRanges;
+  }
+
   calculateProbabilities() {
     try {
       const { _disease, _target } = this;
