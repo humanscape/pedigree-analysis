@@ -1,5 +1,13 @@
 import { genotypes } from '../const';
-import CommonDisease, { MAX, MIN, LIMIT, throwRangeError } from './common';
+import CommonDisease, {
+  MAX,
+  MIN,
+  throwRangeError,
+  willInheritAllele,
+  mayInheritAllele,
+  shouldHaveDiseaseAllele,
+  shouldHaveWildTypeAllele,
+} from './common';
 import type { DiseaseAlleleCountRange, ParentRanges } from './common';
 import type { FamilyMember } from '../family-member';
 
@@ -17,12 +25,8 @@ class AutosomalDisease extends CommonDisease {
     childRange: DiseaseAlleleCountRange,
   ) => {
     const range = [
-      // always gets disease allele if parent only has disease alleles
-      parentRanges.filter((parentRange) => parentRange[MIN] === limit).length,
-
-      // never gets disease allele if parent does not have disease allele
-      parentRanges.filter((parentRange) => parentRange[MAX] !== 0).length,
-
+      parentRanges.filter(willInheritAllele).length,
+      parentRanges.filter(mayInheritAllele).length,
       limit,
     ] as DiseaseAlleleCountRange;
     if (range[MIN] > childRange[MIN]) childRange[MIN] = range[MIN];
@@ -38,46 +42,35 @@ class AutosomalDisease extends CommonDisease {
     const [fatherRange, motherRange] = parentRanges;
 
     /* using childRange[MIN] */
-    if (childMin > parentRanges.filter((range) => range[MAX] !== 0).length)
+    if (childMin > parentRanges.filter(mayInheritAllele).length)
       throw new Error(
         'child has more disease alleles than parents would inherit at most.',
       );
 
     if (childMin === 2) {
       // all parents should have at lease one disease allele
-      parentRanges.forEach((range) => {
-        if (range[MIN] === 0) range[MIN] = 1;
-      });
+      parentRanges.forEach(shouldHaveDiseaseAllele);
     } else if (childMin === 1) {
       // if one parent does not have disease allele, it should come from the other one
-      if (fatherRange[MAX] === 0) {
-        if (motherRange[MIN] === 0) motherRange[MIN] = 1;
-      } else if (motherRange[MAX] === 0 && fatherRange[MIN] === 0)
-        fatherRange[MIN] = 1;
+      if (!mayInheritAllele(fatherRange)) shouldHaveDiseaseAllele(motherRange);
+      else if (!mayInheritAllele(motherRange))
+        shouldHaveDiseaseAllele(fatherRange);
     }
 
     /* using childRange[MAX] */
-    if (
-      childMax <
-      parentRanges.filter((range) => range[MIN] === range[LIMIT]).length
-    )
+    if (childMax < parentRanges.filter(willInheritAllele).length)
       throw new Error(
         'child has less diseases alleles than parent would inherit at least.',
       );
 
     if (childMax === 0) {
       // all parents should have at lease one wild-type allele
-      parentRanges.forEach((range) => {
-        if (range[MAX] === range[LIMIT]) range[MAX] = 1;
-      });
+      parentRanges.forEach(shouldHaveWildTypeAllele);
     } else if (childMax === 1) {
       // if one parent does not have wild-type allele, it should come from the other one
-      if (fatherRange[MIN] === fatherRange[LIMIT]) {
-        if (motherRange[MAX] === 2) {
-          motherRange[MAX] = 1;
-        }
-      } else if (motherRange[MIN] === limit && fatherRange[MAX] === 2)
-        fatherRange[MAX] = 1;
+      if (willInheritAllele(fatherRange)) shouldHaveWildTypeAllele(motherRange);
+      else if (willInheritAllele(motherRange))
+        shouldHaveWildTypeAllele(fatherRange);
     }
   };
 

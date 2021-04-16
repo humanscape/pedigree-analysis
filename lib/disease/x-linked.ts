@@ -1,5 +1,13 @@
 import { genotypes } from '../const';
-import CommonDisease, { MAX, MIN, throwRangeError } from './common';
+import CommonDisease, {
+  MAX,
+  MIN,
+  throwRangeError,
+  willInheritAllele,
+  mayInheritAllele,
+  shouldHaveDiseaseAllele,
+  shouldHaveWildTypeAllele,
+} from './common';
 import AutosomalDisease from './autosomal';
 import type { DiseaseAlleleCountRange, ParentRanges } from './common';
 import type { FamilyMember } from '../family-member';
@@ -35,16 +43,18 @@ class XLinkedDisease extends CommonDisease {
     sonRange: DiseaseAlleleCountRange,
   ) => {
     if (sonRange[MIN] === 1) {
-      if (motherRange[MAX] === 0)
+      if (!mayInheritAllele(motherRange))
         throw new Error('son has disease alleles where mother does not.');
-      if (motherRange[MIN] === 0) motherRange[MIN] = 1;
+      shouldHaveDiseaseAllele(motherRange);
       return;
     }
-    if (motherRange[MIN] === 2)
-      throw new Error(
-        'son does not have disease allele where mother only has disease alleles.',
-      );
-    if (motherRange[MAX] === 2) motherRange[MAX] = 1;
+    if (sonRange[MAX] === 0) {
+      if (willInheritAllele(motherRange))
+        throw new Error(
+          'son does not have disease allele where mother only has disease alleles.',
+        );
+      shouldHaveWildTypeAllele(motherRange);
+    }
   };
 
   _getRangeFromPhenotype = ({ phenotype, _isMale, gender }: FamilyMember) => {

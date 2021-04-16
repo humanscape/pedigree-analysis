@@ -4,9 +4,28 @@ import type { FamilyMember } from '../family-member';
 
 export const MIN = 0;
 export const MAX = 1;
-export const LIMIT = 2;
+const LIMIT = 2;
 export const throwRangeError = () => {
   throw new Error('range[MAX] cannot be less than range[MIN].');
+};
+// always gets disease allele if parent only has disease alleles
+export const willInheritAllele = (parentRange: DiseaseAlleleCountRange) =>
+  parentRange[MIN] === parentRange[LIMIT];
+
+// never gets disease allele if parent does not have disease allele
+export const mayInheritAllele = (parentRange: DiseaseAlleleCountRange) =>
+  parentRange[MAX] !== 0;
+
+export const shouldHaveDiseaseAllele = (
+  parentRange: DiseaseAlleleCountRange,
+) => {
+  if (parentRange[MIN] === 0) parentRange[MIN]++;
+};
+
+export const shouldHaveWildTypeAllele = (
+  parentRange: DiseaseAlleleCountRange,
+) => {
+  if (parentRange[MAX] === parentRange[LIMIT]) parentRange[MAX]--;
 };
 
 export type Phenotype = boolean | null;
