@@ -46,20 +46,14 @@ class AutosomalDisease extends CommonDisease {
     if (childMin === 2) {
       // all parents should have at lease one disease allele
       parentRanges.forEach((range) => {
-        if (range[MIN] === 0) {
-          range[MIN] = 1;
-          if (range[MAX] === 0) throwRangeError();
-        }
+        if (range[MIN] === 0) range[MIN] = 1;
       });
     } else if (childMin === 1) {
       // if one parent does not have disease allele, it should come from the other one
-      const motherMaxZero = motherRange[MAX] === 0;
       if (fatherRange[MAX] === 0) {
-        if (motherRange[MIN] === 0) {
-          motherRange[MIN] = 1;
-          if (motherMaxZero) throwRangeError();
-        }
-      } else if (motherMaxZero && fatherRange[MIN] === 0) fatherRange[MIN] = 1;
+        if (motherRange[MIN] === 0) motherRange[MIN] = 1;
+      } else if (motherRange[MAX] === 0 && fatherRange[MIN] === 0)
+        fatherRange[MIN] = 1;
     }
 
     /* using childRange[MAX] */
@@ -74,20 +68,16 @@ class AutosomalDisease extends CommonDisease {
     if (childMax === 0) {
       // all parents should have at lease one wild-type allele
       parentRanges.forEach((range) => {
-        if (range[MAX] === range[LIMIT]) {
-          range[MAX] = 1;
-          if (range[MIN] === 2) throwRangeError();
-        }
+        if (range[MAX] === range[LIMIT]) range[MAX] = 1;
       });
     } else if (childMax === 1) {
       // if one parent does not have wild-type allele, it should come from the other one
-      const motherMinLimit = motherRange[MIN] === limit;
       if (fatherRange[MIN] === fatherRange[LIMIT]) {
         if (motherRange[MAX] === 2) {
           motherRange[MAX] = 1;
-          if (motherMinLimit) throwRangeError();
         }
-      } else if (motherMinLimit && fatherRange[MAX] === 2) fatherRange[MAX] = 1;
+      } else if (motherRange[MIN] === limit && fatherRange[MAX] === 2)
+        fatherRange[MAX] = 1;
     }
   };
 
@@ -107,7 +97,7 @@ class AutosomalDisease extends CommonDisease {
   _getGenotypesFromRange = ([min, max]: DiseaseAlleleCountRange) => {
     max++; // exclusive
     if (!this._isDominant) {
-      const temp = -(max as number);
+      const temp = -max;
       max = (-min || undefined) as number;
       min = temp;
     }
