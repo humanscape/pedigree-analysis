@@ -43,6 +43,34 @@ class Pedigree {
     (motherAllele > fatherAllele // sort alleles ASC
       ? `${fatherAllele}${motherAllele}`
       : `${motherAllele}${fatherAllele}`) as Genotype;
+  calculateProbabilities() {
+    try {
+      const { _disease, _target } = this;
+      if (!_target.mom || !_target.dad)
+        throw new Error('target must have parents for pedigree-analysis.');
+
+      const [fatherRange, motherRange] = this._analyze(_target);
+      const motherGenotypes = _disease._getGenotypesFromRange(
+        motherRange,
+        _target.mom,
+      );
+      const fatherGenotypes = _disease._getGenotypesFromRange(
+        fatherRange,
+        _target.dad,
+      );
+
+      return (inheritances.isAutosomal(_disease.inheritance)
+        ? Pedigree._calculateAutosomalProbabilities
+        : Pedigree._calculateSexLinkedProbabilities)(
+        motherGenotypes,
+        fatherGenotypes,
+        _disease,
+      );
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
 }
 
 export default Pedigree;
