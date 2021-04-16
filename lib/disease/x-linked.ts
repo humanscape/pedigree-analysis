@@ -36,13 +36,13 @@ class XLinkedDisease extends CommonDisease {
   ) => {
     if (sonRange[MIN] === 1) {
       if (motherRange[MAX] === 0)
-        throw new Error('son has disease alleles where mother does not');
+        throw new Error('son has disease alleles where mother does not.');
       if (motherRange[MIN] === 0) motherRange[MIN] = 1;
       return;
     }
     if (motherRange[MIN] === 2)
       throw new Error(
-        'son does not have disease allele where mother only has disease alleles',
+        'son does not have disease allele where mother only has disease alleles.',
       );
     if (motherRange[MAX] === 2) motherRange[MAX] = 1;
   };

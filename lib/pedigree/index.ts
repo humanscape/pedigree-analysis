@@ -30,7 +30,7 @@ class Pedigree {
 
   constructor(disease: CommonDisease, target: FamilyMember) {
     if (!(disease instanceof CommonDisease))
-      throw new Error('diease must be instance created by DiseaseFactory.');
+      throw new Error('disease must be instance created by DiseaseFactory.');
     if (!FamilyMemberFactory._isInstance(target))
       throw new Error(
         'target must be instance created by FamilyMemberFactory.',

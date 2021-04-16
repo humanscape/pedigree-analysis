@@ -40,7 +40,7 @@ class AutosomalDisease extends CommonDisease {
     /* using childRange[MIN] */
     if (childMin > parentRanges.filter((range) => range[MAX] !== 0).length)
       throw new Error(
-        'child has more disease alleles than parents would inherit at most',
+        'child has more disease alleles than parents would inherit at most.',
       );
 
     if (childMin === 2) {
@@ -62,7 +62,7 @@ class AutosomalDisease extends CommonDisease {
       parentRanges.filter((range) => range[MIN] === range[LIMIT]).length
     )
       throw new Error(
-        'child has less diseases alleles than parent would inherit at least',
+        'child has less diseases alleles than parent would inherit at least.',
       );
 
     if (childMax === 0) {

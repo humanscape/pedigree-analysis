@@ -6,7 +6,7 @@ export const MIN = 0;
 export const MAX = 1;
 export const LIMIT = 2;
 export const throwRangeError = () => {
-  throw new Error('range[MAX] cannot be less than range[MIN]');
+  throw new Error('range[MAX] cannot be less than range[MIN].');
 };
 
 export type Phenotype = boolean | null;
