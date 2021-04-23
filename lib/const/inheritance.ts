@@ -17,6 +17,7 @@ export default Object.freeze({
   XD,
   X_RECESSIVE: XR,
   XR,
+  X_SEMIDOMINANT: 'XS', // heterozygotes have milder and more variable phenotype than hemizygotes
   isAutosomal: (inheritance: Inheritance) => inheritance.startsWith('A'),
   isDominant: (inheritance: Inheritance) => inheritance.endsWith('D'),
   isValid: (inheritance: string) => choices.has(inheritance as Inheritance),

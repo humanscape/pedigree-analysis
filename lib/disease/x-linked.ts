@@ -1,4 +1,4 @@
-import { genotypes } from '../const';
+import { genotypes, inheritances } from '../const';
 import CommonDisease, {
   MAX,
   MIN,
@@ -60,7 +60,13 @@ class XLinkedDisease extends CommonDisease {
   _getRangeFromPhenotype = ({ phenotype, _isMale, gender }: FamilyMember) => {
     const limit = XLinkedDisease._validGenotypes[gender].length - 1;
     return [
-      phenotype ? (_isMale || this._isDominant ? 1 : 2) : 0,
+      phenotype
+        ? _isMale ||
+          this._isDominant ||
+          this._inheritance === inheritances.X_SEMIDOMINANT
+          ? 1
+          : 2
+        : 0,
       phenotype === false ? (_isMale || this._isDominant ? 0 : 1) : limit,
       limit,
     ] as DiseaseAlleleCountRange;
