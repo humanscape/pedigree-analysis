@@ -64,6 +64,10 @@ const genderByRelationship = {
   },
 };
 
+/**
+ * Class representing a family member including its phenotype and relationships
+ * @class
+ */
 class FamilyMember {
   _id: string | number;
 
@@ -257,6 +261,10 @@ class FamilyMember {
 
   get gender() {
     return this._gender;
+  }
+
+  get phenotype() {
+    return this._phenotype;
   }
 
   get mom() {

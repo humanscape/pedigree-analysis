@@ -1,61 +1,76 @@
 import { inheritances, genotypes } from '../const';
-import type { Allele, Gender, Genotype, Inheritance } from '../const';
+import type { Genotype, Inheritance } from '../const';
+import type { FamilyMember } from '../family-member';
 
-export type ChildrenProbabilities = {
-  [genotype: string]: number; // type of genotype is Genotype
+export const MIN = 0;
+export const MAX = 1;
+const LIMIT = 2;
+export const throwRangeError = () => {
+  throw new Error('range[MAX] cannot be less than range[MIN].');
+};
+// always gets disease allele if parent only has disease alleles
+export const willInheritAllele = (parentRange: DiseaseAlleleCountRange) =>
+  parentRange[MIN] === parentRange[LIMIT];
+
+// never gets disease allele if parent does not have disease allele
+export const mayInheritAllele = (parentRange: DiseaseAlleleCountRange) =>
+  parentRange[MAX] !== 0;
+
+export const shouldHaveDiseaseAllele = (
+  parentRange: DiseaseAlleleCountRange,
+) => {
+  if (parentRange[MIN] === 0) parentRange[MIN]++;
+};
+
+export const shouldHaveWildTypeAllele = (
+  parentRange: DiseaseAlleleCountRange,
+) => {
+  if (parentRange[MAX] === parentRange[LIMIT]) parentRange[MAX]--;
 };
 
 export type Phenotype = boolean | null;
+
+export type DiseaseAlleleCountRange = [number, number, number]; // [min, max, limit]
+export type ParentRanges = [DiseaseAlleleCountRange, DiseaseAlleleCountRange]; // [father, mother]
 
 export interface Disease {
   name: string;
   inheritance: Inheritance;
   isDominant: boolean;
-  getValidGenotypes: ({ gender }: { gender?: Gender }) => Genotype[];
-  hasValidGenotypes: ({
-    gender,
-    genotypes: list,
-  }: {
-    gender: Gender;
-    genotypes: Genotype[];
-  }) => boolean;
-  getPhenotype: ({ genotypes: list }: { genotypes: Genotype[] }) => Phenotype;
   hasDisease: (genotype: Genotype) => boolean;
-  getPossibleGenotypes: ({
-    gender,
-    phenotype,
-  }: {
-    gender: Gender;
-    phenotype: Phenotype;
-  }) => Genotype[];
 }
 
 abstract class CommonDisease implements Disease {
-  abstract getValidGenotypes({ gender }: { gender?: Gender }): Genotype[];
-
-  abstract hasValidGenotypes({
-    gender,
-    genotypes: list,
-  }: {
-    gender: Gender;
-    genotypes: Genotype[];
-  }): boolean;
-
-  abstract getPossibleGenotypes({
-    gender,
-    phenotype,
-  }: {
-    gender: Gender;
-    phenotype: Phenotype;
-  }): Genotype[];
-
   _name: string;
 
   _inheritance: Inheritance;
 
   _isDominant: boolean;
 
-  _diseaseAllele: Allele;
+  abstract _getRangeFromPhenotype: (
+    member: FamilyMember,
+  ) => DiseaseAlleleCountRange;
+
+  abstract _updateRangeFromParents: (
+    parentRanges: ParentRanges,
+    childRange: DiseaseAlleleCountRange,
+    { _isMale }: FamilyMember,
+  ) => void;
+
+  abstract _updateRangeFromSon: (
+    parentRanges: ParentRanges,
+    sonRange: DiseaseAlleleCountRange,
+  ) => void;
+
+  abstract _updateRangeFromDaughter: (
+    parentRanges: ParentRanges,
+    daughterRange: DiseaseAlleleCountRange,
+  ) => void;
+
+  abstract _getGenotypesFromRange: (
+    range: DiseaseAlleleCountRange,
+    { gender }: FamilyMember,
+  ) => Genotype[];
 
   /**
    * Creates an abstract disease with name and inheritance
@@ -66,8 +81,6 @@ abstract class CommonDisease implements Disease {
     this._name = name;
     this._inheritance = inheritance;
     this._isDominant = inheritances.isDominant(inheritance);
-    this._diseaseAllele =
-      genotypes[this._isDominant ? 'DOMINANT_ALLELE' : 'RECESSIVE_ALLELE'];
   }
 
   get name() {
@@ -82,58 +95,8 @@ abstract class CommonDisease implements Disease {
     return this._isDominant;
   }
 
-  getPhenotype({ genotypes: list }: { genotypes: Genotype[] }) {
-    let yes = false;
-    let no = false;
-    list.forEach((genotype) => {
-      if (this.hasDisease(genotype)) yes = true;
-      else no = true;
-    });
-    return yes ? (no ? null : true) : false;
-  }
-
   hasDisease(genotype: Genotype) {
-    return genotype.includes(this._diseaseAllele);
-  }
-
-  static _getProbabilitiesFromGenotypes(
-    motherGenotype: Genotype,
-    fatherGenotype: Genotype,
-  ) {
-    const cases = motherGenotype.length * fatherGenotype.length;
-    const probabilities = {} as ChildrenProbabilities;
-    motherGenotype.split('').forEach((motherAllele) => {
-      fatherGenotype.split('').forEach((fatherAllele) => {
-        const genotype =
-          motherAllele > fatherAllele // sort alleles ASC
-            ? `${fatherAllele}${motherAllele}`
-            : `${motherAllele}${fatherAllele}`;
-        if (probabilities[genotype] === undefined) probabilities[genotype] = 0;
-        probabilities[genotype] += 1 / cases;
-      });
-    });
-    return probabilities;
-  }
-
-  _calculateDiseaseProbability({
-    mother: motherGenotype,
-    father: fatherGenotype,
-  }: {
-    mother: Genotype;
-    father: Genotype;
-  }) {
-    return Object.entries(
-      CommonDisease._getProbabilitiesFromGenotypes(
-        motherGenotype,
-        fatherGenotype,
-      ),
-    ).reduce(
-      (diseaseProbability, [genotype, probability]) =>
-        this.hasDisease(genotype as Genotype)
-          ? diseaseProbability + probability
-          : diseaseProbability,
-      0,
-    );
+    return this._isDominant === genotype.includes(genotypes.DOMINANT_ALLELE);
   }
 }
 

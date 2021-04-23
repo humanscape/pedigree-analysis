@@ -1,8 +1,16 @@
-/* eslint-disable class-methods-use-this */
-import { genotypes } from '../const';
-import type { Gender, Genotype } from '../const';
-import CommonDisease from './common';
-import type { Phenotype } from './common';
+import { genotypes, inheritances } from '../const';
+import CommonDisease, {
+  MAX,
+  MIN,
+  throwRangeError,
+  willInheritAllele,
+  mayInheritAllele,
+  shouldHaveDiseaseAllele,
+  shouldHaveWildTypeAllele,
+} from './common';
+import AutosomalDisease from './autosomal';
+import type { DiseaseAlleleCountRange, ParentRanges } from './common';
+import type { FamilyMember } from '../family-member';
 
 /**
  * Class representing a X-linked disease
@@ -11,46 +19,71 @@ import type { Phenotype } from './common';
 class XLinkedDisease extends CommonDisease {
   static _validGenotypes = genotypes.byGender;
 
-  getValidGenotypes({ gender }: { gender: Gender }) {
-    const list = XLinkedDisease._validGenotypes[gender];
-    if (!list) throw new Error(`gender '${gender}' is invalid.`);
-    return list;
-  }
+  static updateRangeFromParents = (
+    [fatherRange, motherRange]: ParentRanges,
+    childRange: DiseaseAlleleCountRange,
+    { _isMale }: FamilyMember,
+  ) => {
+    const motherHasMin = motherRange[MIN] && 1;
+    const motherHasMax = motherRange[MAX] && 1;
+    const range = (_isMale
+      ? [motherHasMin, motherHasMax, 1]
+      : [
+          fatherRange[MIN] + motherHasMin,
+          fatherRange[MAX] + motherHasMax,
+          2,
+        ]) as DiseaseAlleleCountRange;
+    if (range[MIN] > childRange[MIN]) childRange[MIN] = range[MIN];
+    if (range[MAX] < childRange[MAX]) childRange[MAX] = range[MAX];
+    if (childRange[MIN] > childRange[MAX]) throwRangeError();
+  };
 
-  hasValidGenotypes({
-    gender,
-    genotypes: list,
-  }: {
-    gender: Gender;
-    genotypes: Genotype[];
-  }) {
-    if (!Array.isArray(list) || !list.length) return false;
+  static _updateRangeFromSon = (
+    [_, motherRange]: ParentRanges,
+    sonRange: DiseaseAlleleCountRange,
+  ) => {
+    if (sonRange[MIN] === 1) {
+      if (!mayInheritAllele(motherRange))
+        throw new Error('son has disease allele where mother does not.');
+      shouldHaveDiseaseAllele(motherRange);
+      return;
+    }
+    if (sonRange[MAX] === 0) {
+      if (willInheritAllele(motherRange))
+        throw new Error(
+          'son does not have disease allele where mother only has disease alleles.',
+        );
+      shouldHaveWildTypeAllele(motherRange);
+    }
+  };
 
-    const genotypeSet = new Set(list);
-    if (genotypeSet.size !== list.length) return false;
+  _getRangeFromPhenotype = ({ phenotype, _isMale, gender }: FamilyMember) => {
+    const limit = XLinkedDisease._validGenotypes[gender].length - 1;
+    return [
+      phenotype
+        ? _isMale ||
+          this._isDominant ||
+          this._inheritance === inheritances.X_SEMIDOMINANT
+          ? 1
+          : 2
+        : 0,
+      phenotype === false ? (_isMale || this._isDominant ? 0 : 1) : limit,
+      limit,
+    ] as DiseaseAlleleCountRange;
+  };
 
-    (XLinkedDisease._validGenotypes[gender] ?? []).forEach((genotype) =>
-      genotypeSet.delete(genotype),
-    );
-    return genotypeSet.size === 0; // if not 0, has invalid genotypes
-  }
+  _updateRangeFromParents = XLinkedDisease.updateRangeFromParents;
 
-  getPossibleGenotypes({
-    gender,
-    phenotype,
-  }: {
-    gender: Gender;
-    phenotype: Phenotype;
-  }) {
-    const list = this.getValidGenotypes({ gender });
-    const filter = phenotype
-      ? (genotype: Genotype) => super.hasDisease(genotype)
-      : phenotype === false
-      ? (genotype: Genotype) => !super.hasDisease(genotype)
-      : null;
-    if (filter) return list.filter(filter);
-    return list;
-  }
+  _updateRangeFromSon = XLinkedDisease._updateRangeFromSon;
+
+  _updateRangeFromDaughter = AutosomalDisease._updateRangeFromChild; // can use same logic
+
+  _getGenotypesFromRange = (
+    [min, max]: DiseaseAlleleCountRange,
+    { gender }: FamilyMember,
+  ) => {
+    return XLinkedDisease._validGenotypes[gender].slice(min, max + 1);
+  };
 }
 
 export default XLinkedDisease;
