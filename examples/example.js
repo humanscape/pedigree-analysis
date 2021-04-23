@@ -24,7 +24,10 @@ const grandFather2 = FamilyMemberFactory.create('외할아버지', MALE);
 grandMother2.marry(grandFather2);
 grandFather2.has.daughter(mom);
 
-const disease = DiseaseFactory.create('질환명', inheritances.X_RECESSIVE);
+const disease = DiseaseFactory.create(
+  '질환명',
+  inheritances.X_LINKED_RECESSIVE,
+);
 
 const pd = new Pedigree(disease, me);
 console.dir(pd.calculateProbabilities(), { depth: null });

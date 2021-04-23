@@ -17,7 +17,7 @@ import type { FamilyMember } from '../family-member';
  * @class
  */
 class XLinkedDisease extends CommonDisease {
-  static _validGenotypes = genotypes.byGender;
+  static _validGenotypes = genotypes.X_LINKED;
 
   static updateRangeFromParents = (
     [fatherRange, motherRange]: ParentRanges,
@@ -63,7 +63,7 @@ class XLinkedDisease extends CommonDisease {
       phenotype
         ? _isMale ||
           this._isDominant ||
-          this._inheritance === inheritances.X_SEMIDOMINANT
+          this._inheritance === inheritances.X_LINKED
           ? 1
           : 2
         : 0,
