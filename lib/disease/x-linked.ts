@@ -82,7 +82,13 @@ class XLinkedDisease extends CommonDisease {
     [min, max]: DiseaseAlleleCountRange,
     { gender }: FamilyMember,
   ) => {
-    return XLinkedDisease._validGenotypes[gender].slice(min, max + 1);
+    max++; // exclusive
+    if (!this._isDominant) {
+      const temp = -max;
+      max = (-min || undefined) as number;
+      min = temp;
+    }
+    return XLinkedDisease._validGenotypes[gender].slice(min, max);
   };
 }
 
