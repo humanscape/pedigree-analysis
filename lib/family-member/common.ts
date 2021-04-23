@@ -91,6 +91,28 @@ class FamilyMember {
 
   mayHave: { disease: () => void };
 
+  static _getNearestMaleAncestorsOf(target: FamilyMember) {
+    const maleAncestors = [];
+    const father = target.dad;
+    if (father) {
+      maleAncestors.push(father);
+      const grandFather = (target.mom as FamilyMember).dad;
+      if (grandFather) maleAncestors.push(grandFather);
+    }
+    return maleAncestors;
+  }
+
+  static _getNearestFemaleAncestorsOf(target: FamilyMember) {
+    const femaleAncestors = [];
+    const mother = target.mom;
+    if (mother) {
+      femaleAncestors.push(mother);
+      const grandMother = (target.dad as FamilyMember).mom;
+      if (grandMother) femaleAncestors.push(grandMother);
+    }
+    return femaleAncestors;
+  }
+
   _validateMember(relationship: Child | Sibling, member: FamilyMember) {
     const { isMale, gender, getRelationship } = genderByRelationship[
       relationship
@@ -116,6 +138,11 @@ class FamilyMember {
   _addChild(relationship: Child, child: FamilyMember) {
     if (!this.spouse)
       throw new Error(`cannot have ${relationship} before getting married.`);
+
+    [this, this.spouse].forEach((parent) => {
+      if (child === parent || parent.hasAncestor(child))
+        throw new Error('child cannot be one of its ancestors.');
+    });
 
     const { id } = child;
     this._relationships[`${relationship}s` as const][id] = child;
@@ -253,6 +280,20 @@ class FamilyMember {
       _relationships.daughters = {};
       _relationships.spouse = undefined;
     });
+  }
+
+  hasAncestor(ancestor: FamilyMember) {
+    const getNearestAncestorsOf =
+      FamilyMember[
+        `_getNearest${ancestor._isMale ? 'Male' : 'Female'}AncestorsOf` as const
+      ];
+    const stack = [];
+    let target: FamilyMember = this;
+    while (stack.push(...getNearestAncestorsOf(target))) {
+      target = stack.pop() as FamilyMember;
+      if (ancestor === target) return true;
+    }
+    return false;
   }
 
   get id() {
