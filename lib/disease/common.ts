@@ -1,5 +1,5 @@
 import { inheritances, genotypes } from '../const';
-import type { Allele, Genotype, Inheritance } from '../const';
+import type { Genotype, Inheritance } from '../const';
 import type { FamilyMember } from '../family-member';
 
 export const MIN = 0;
