@@ -184,26 +184,42 @@ class Pedigree {
   calculateProbabilities() {
     try {
       const { _disease, _target } = this;
-      if (!_target.mom || !_target.dad)
+      const { mom, dad, sisters } = _target;
+      if (!mom || !dad)
         throw new Error('target must have parents for pedigree-analysis.');
 
       const [fatherRange, motherRange] = this._analyze(_target);
-      const motherGenotypes = _disease._getGenotypesFromRange(
-        motherRange,
-        _target.mom,
-      );
-      const fatherGenotypes = _disease._getGenotypesFromRange(
-        fatherRange,
-        _target.dad,
-      );
+      const motherGenotypes = _disease._getGenotypesFromRange(motherRange, mom);
+      const fatherGenotypes = _disease._getGenotypesFromRange(fatherRange, dad);
 
-      return (inheritances.isAutosomal(_disease.inheritance)
+      const isDiseaseAutosomal = inheritances.isAutosomal(_disease.inheritance);
+      const result = (isDiseaseAutosomal
         ? Pedigree._calculateAutosomalProbabilities
         : Pedigree._calculateSexLinkedProbabilities)(
         motherGenotypes,
         fatherGenotypes,
         _disease,
       );
+
+      const firstResult = result[0][0];
+      if (
+        _disease.inheritance !== inheritances.X_LINKED &&
+        !Object.values(firstResult.genotype).some(genotypes._hasDominantAllele)
+        // none of parents have dominant allele
+      ) {
+        const children = sisters as FamilyMember[];
+        if (isDiseaseAutosomal)
+          children?.push(...(_target.brothers as FamilyMember[]));
+        if (
+          children.some((child) => child.phenotype === _disease._isDominant)
+          // but children having dominant allele is not possible
+        ) {
+          firstResult.son = null as any;
+          firstResult.daughter = null as any;
+        }
+      }
+
+      return result;
     } catch (error) {
       console.error(error);
       return null;
