@@ -161,18 +161,20 @@ class Pedigree {
     ] as ParentRanges;
 
     // analyze from children
-    Object.values(mom.sons).forEach((son) =>
-      _disease._updateRangeFromSon(
-        parentRanges,
-        _disease._getRangeFromPhenotype(son),
-      ),
-    );
-    Object.values(dad.daughters).forEach((daughter) =>
-      _disease._updateRangeFromDaughter(
-        parentRanges,
-        _disease._getRangeFromPhenotype(daughter),
-      ),
-    );
+    Object.values(mom.sons).forEach((son) => {
+      if (son.phenotype !== null)
+        _disease._updateRangeFromSon(
+          parentRanges,
+          _disease._getRangeFromPhenotype(son),
+        );
+    });
+    Object.values(dad.daughters).forEach((daughter) => {
+      if (daughter.phenotype !== null)
+        _disease._updateRangeFromDaughter(
+          parentRanges,
+          _disease._getRangeFromPhenotype(daughter),
+        );
+    });
 
     // analyze from parents
     parentRanges.forEach((parentRange, index) => {
