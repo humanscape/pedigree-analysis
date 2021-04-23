@@ -2,32 +2,47 @@ import genders from './gender';
 
 const { MALE, FEMALE } = genders;
 
-// use '|' so that 'A' < 'a' < '|' (charCode)
 const DOMINANT_ALLELE = 'A' as const;
 const RECESSIVE_ALLELE = 'a' as const;
-const NULL_ALLELE = '|' as const;
+
+const X_DOMINANT_ALLELE = 'X' as const;
+const X_RECESSIVE_ALLELE = 'x' as const;
+const Y_DOMINANT_ALLELE = 'Y' as const;
+// const Y_RECESSIVE_ALLELE = 'y' as const;
+
+// const NULL_ALLELE = '_' as const; // women do not have Y chromosome
 
 export type Allele =
   | typeof DOMINANT_ALLELE
   | typeof RECESSIVE_ALLELE
-  | typeof NULL_ALLELE;
+  | typeof X_DOMINANT_ALLELE
+  | typeof X_RECESSIVE_ALLELE
+  | typeof Y_DOMINANT_ALLELE;
+// | typeof Y_RECESSIVE_ALLELE
+// | typeof NULL_ALLELE;
 
-const HOMOZYGOUS_DOMINANT = `${DOMINANT_ALLELE}${DOMINANT_ALLELE}` as const;
-const HETEROZYGOUS = `${DOMINANT_ALLELE}${RECESSIVE_ALLELE}` as const;
-const HOMOZYGOUS_RECESSIVE = `${RECESSIVE_ALLELE}${RECESSIVE_ALLELE}` as const;
-const HEMIZYGOUS_DOMINANT = `${DOMINANT_ALLELE}${NULL_ALLELE}` as const;
-const HEMIZYGOUS_RECESSIVE = `${RECESSIVE_ALLELE}${NULL_ALLELE}` as const;
-const NULL = `${NULL_ALLELE}${NULL_ALLELE}` as const; // for example, women do not have Y chromosome
+// Autosomal
+const HOMOZYGOUS_DOMINANT = `${DOMINANT_ALLELE}${DOMINANT_ALLELE}` as const; // AA
+const HETEROZYGOUS = `${DOMINANT_ALLELE}${RECESSIVE_ALLELE}` as const; // Aa
+const HOMOZYGOUS_RECESSIVE = `${RECESSIVE_ALLELE}${RECESSIVE_ALLELE}` as const; // aa
+
+// X-linked
+const X_HOMOZYGOUS_DOMINANT = `${X_DOMINANT_ALLELE}${X_DOMINANT_ALLELE}` as const; // XX
+const X_HETEROZYGOUS = `${X_DOMINANT_ALLELE}${X_RECESSIVE_ALLELE}` as const; // Xx
+const X_HOMOZYGOUS_RECESSIVE = `${X_RECESSIVE_ALLELE}${X_RECESSIVE_ALLELE}` as const; // xx
+const X_HEMIZYGOUS_DOMINANT = `${X_DOMINANT_ALLELE}${Y_DOMINANT_ALLELE}` as const; // XY
+const X_HEMIZYGOUS_RECESSIVE = `${X_RECESSIVE_ALLELE}${Y_DOMINANT_ALLELE}` as const; // xY
 
 const genotypeList = [
   HOMOZYGOUS_DOMINANT,
   HETEROZYGOUS,
   HOMOZYGOUS_RECESSIVE,
-  HEMIZYGOUS_DOMINANT,
-  HEMIZYGOUS_RECESSIVE,
-  NULL,
+  X_HOMOZYGOUS_DOMINANT,
+  X_HETEROZYGOUS,
+  X_HOMOZYGOUS_RECESSIVE,
+  X_HEMIZYGOUS_DOMINANT,
+  X_HEMIZYGOUS_RECESSIVE,
 ] as const;
-const choices = new Set(genotypeList);
 
 export type Genotype = typeof genotypeList[number];
 
@@ -36,43 +51,35 @@ const AUTOSOMAL = Object.freeze([
   HETEROZYGOUS,
   HOMOZYGOUS_DOMINANT,
 ]) as Genotype[];
-const X_FEMALE = AUTOSOMAL;
+const X_FEMALE = Object.freeze([
+  X_HOMOZYGOUS_RECESSIVE,
+  X_HETEROZYGOUS,
+  X_HOMOZYGOUS_RECESSIVE,
+]);
 const X_MALE = Object.freeze([
-  HEMIZYGOUS_RECESSIVE,
-  HEMIZYGOUS_DOMINANT,
-]) as Genotype[];
-const Y_FEMALE = Object.freeze([NULL]) as Genotype[];
-const Y_MALE = X_MALE;
-const DOMINANT = Object.freeze([
-  HOMOZYGOUS_DOMINANT,
-  HETEROZYGOUS,
-  HEMIZYGOUS_DOMINANT,
-]) as Genotype[];
-const RECESSIVE = Object.freeze([
-  HOMOZYGOUS_RECESSIVE,
-  HEMIZYGOUS_RECESSIVE,
+  X_HEMIZYGOUS_RECESSIVE,
+  X_HEMIZYGOUS_DOMINANT,
 ]) as Genotype[];
 
 export default Object.freeze({
-  DOMINANT_ALLELE,
-  RECESSIVE_ALLELE,
-  NULL_ALLELE,
-  HOMOZYGOUS_DOMINANT,
-  HETEROZYGOUS,
-  HOMOZYGOUS_RECESSIVE,
-  HEMIZYGOUS_DOMINANT,
-  HEMIZYGOUS_RECESSIVE,
-  NULL,
   AUTOSOMAL,
-  Y_FEMALE,
-  Y_MALE,
-  X_FEMALE,
-  X_MALE,
-  DOMINANT,
-  RECESSIVE,
-  isValid: (genotype: string) => choices.has(genotype as Genotype),
-  byGender: {
+  X_LINKED: {
     [MALE]: X_MALE,
     [FEMALE]: X_FEMALE,
+  },
+  _isAlleleY: (fatherAllele: Allele) =>
+    fatherAllele.toUpperCase() === Y_DOMINANT_ALLELE,
+  _hasDominantAllele: (genotype: string) =>
+    genotype[0].toUpperCase() === genotype[0],
+  _fromAlleles: (motherAllele: Allele, fatherAllele: Allele) => {
+    const motherFirst =
+      fatherAllele === Y_DOMINANT_ALLELE || motherAllele < fatherAllele;
+    // (fatherAllele.toUpperCase() === Y_DOMINANT_ALLELE)
+    //   ? motherAllele !== NULL_ALLELE
+    //   : motherAllele < fatherAllele
+
+    return (motherFirst
+      ? `${motherAllele}${fatherAllele}`
+      : `${fatherAllele}${motherAllele}`) as Genotype;
   },
 });

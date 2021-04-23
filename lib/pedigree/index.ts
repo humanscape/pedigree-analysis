@@ -52,11 +52,6 @@ class Pedigree {
       0,
     );
 
-  static _getGenotype = (fatherAllele: Allele, motherAllele: Allele) =>
-    (motherAllele > fatherAllele // sort alleles ASC
-      ? `${fatherAllele}${motherAllele}`
-      : `${motherAllele}${fatherAllele}`) as Genotype;
-
   static _calculateAutosomalProbabilities(
     motherGenotypes: Genotype[],
     fatherGenotypes: Genotype[],
@@ -70,9 +65,9 @@ class Pedigree {
         const probabilities = {} as Probabilities;
         [...motherGenotype].forEach((motherAllele) =>
           [...fatherGenotype].forEach((fatherAllele) => {
-            const genotype = Pedigree._getGenotype(
-              fatherAllele as Allele,
+            const genotype = genotypes._fromAlleles(
               motherAllele as Allele,
+              fatherAllele as Allele,
             );
             if (probabilities[genotype] === undefined)
               probabilities[genotype] = 0;
@@ -99,11 +94,6 @@ class Pedigree {
     disease: CommonDisease, // use this for only XLinkedDisease
   ) {
     // pedigree analysis does not support sex chromosome aneuploidy yet
-    /**
-     * const countY = fatherGenotype.match(
-     * new RegExp(genotypes.NULL_ALLELE, 'g'),
-     * )?.length as number;
-     */
     const cases = {
       son: 2, // motherGenotype.length * countY,
       daughter: 2, // motherGenotype.length * (fatherGenotype.length - countY),
@@ -119,14 +109,13 @@ class Pedigree {
 
         [...motherGenotype].forEach((motherAllele) =>
           [...fatherGenotype].forEach((fatherAllele) => {
-            const genotype = Pedigree._getGenotype(
-              fatherAllele as Allele,
+            const genotype = genotypes._fromAlleles(
               motherAllele as Allele,
+              fatherAllele as Allele,
             );
-            const key =
-              genotype.indexOf(genotypes.NULL_ALLELE) === 1
-                ? 'son' // *_
-                : 'daughter'; // ** (X-linked) or __ (Y-linked)
+            const key = genotypes._isAlleleY(fatherAllele as Allele)
+              ? 'son'
+              : 'daughter';
             const { probabilities } = childrenInfo[key];
             if (probabilities[genotype] === undefined)
               probabilities[genotype] = 0;
