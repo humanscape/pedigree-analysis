@@ -165,8 +165,8 @@ class FamilyMember {
   }
 
   _deleteParents() {
-    this._relationships.mom = undefined;
-    this._relationships.dad = undefined;
+    delete this._relationships.mom;
+    delete this._relationships.dad;
   }
 
   _hasChild(childObject: { [relationship: string]: FamilyMember }) {
