@@ -244,7 +244,7 @@ class FamilyMember {
   }
 
   marry(spouse: FamilyMember) {
-    if (this.spouse)
+    if (this.spouse || spouse.spouse)
       throw new Error(
         'pedigree analysis is not prepared for multiple marriages... divorce first in order to marry again.',
       );
