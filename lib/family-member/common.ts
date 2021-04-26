@@ -140,7 +140,7 @@ class FamilyMember {
       throw new Error(`cannot have ${relationship} before getting married.`);
 
     [this, this.spouse].forEach((parent) => {
-      if (child === parent || parent.hasAncestor(child))
+      if (child.equals(parent) || parent.hasAncestor(child))
         throw new Error('child cannot be one of its ancestors.');
     });
 
@@ -291,9 +291,13 @@ class FamilyMember {
     let target: FamilyMember = this;
     while (stack.push(...getNearestAncestorsOf(target))) {
       target = stack.pop() as FamilyMember;
-      if (ancestor === target) return true;
+      if (ancestor.equals(target)) return true;
     }
     return false;
+  }
+
+  equals(member: FamilyMember) {
+    return this._id === member._id;
   }
 
   get id() {
