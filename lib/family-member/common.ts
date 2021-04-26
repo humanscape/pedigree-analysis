@@ -320,11 +320,11 @@ class FamilyMember {
   }
 
   get sons() {
-    return this._relationships.sons;
+    return { ...this._relationships.sons };
   }
 
   get daughters() {
-    return this._relationships.daughters;
+    return { ...this._relationships.daughters };
   }
 
   get brothers() {
