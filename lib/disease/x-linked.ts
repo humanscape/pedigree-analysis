@@ -19,7 +19,7 @@ import type { FamilyMember } from '../family-member';
 class XLinkedDisease extends CommonDisease {
   static _validGenotypes = genotypes.X_LINKED;
 
-  static updateRangeFromParents = (
+  static _updateRangeFromParents = (
     [fatherRange, motherRange]: ParentRanges,
     childRange: DiseaseAlleleCountRange,
     { _isMale }: FamilyMember,
@@ -72,7 +72,7 @@ class XLinkedDisease extends CommonDisease {
     ] as DiseaseAlleleCountRange;
   };
 
-  _updateRangeFromParents = XLinkedDisease.updateRangeFromParents;
+  _updateRangeFromParents = XLinkedDisease._updateRangeFromParents;
 
   _updateRangeFromSon = XLinkedDisease._updateRangeFromSon;
 
