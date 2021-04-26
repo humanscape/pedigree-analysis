@@ -244,15 +244,16 @@ class FamilyMember {
   }
 
   marry(spouse: FamilyMember) {
+    if (!(spouse instanceof FamilyMember) || this._isMale === spouse._isMale)
+      throw new Error(
+        'spouse must be an instance of FamilyMember with different gender for pedigree analysis.',
+      );
+
     if (this.spouse || spouse.spouse)
       throw new Error(
         'pedigree analysis is not prepared for multiple marriages... divorce first in order to marry again.',
       );
 
-    if (!(spouse instanceof FamilyMember) || this._isMale === spouse._isMale)
-      throw new Error(
-        'spouse must be an instance of FamilyMember with different gender for pedigree analysis.',
-      );
     this._relationships.spouse = spouse;
     spouse._relationships.spouse = this;
     spouse._relationships.sons = this.sons; // share reference
