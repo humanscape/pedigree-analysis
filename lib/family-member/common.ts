@@ -81,15 +81,11 @@ class FamilyMember {
 
   _relationships: Relationship;
 
-  has: Has;
+  _has: Has;
 
-  have: Has;
+  _doesNotHave: DoesNotHave;
 
-  doesNotHave: DoesNotHave;
-
-  doNotHave: DoesNotHave;
-
-  mayHave: { disease: () => void };
+  _mayHave: { disease: () => void };
 
   static _getNearestMaleAncestorsOf(target: FamilyMember) {
     const maleAncestors = [];
@@ -192,7 +188,7 @@ class FamilyMember {
 
     this._validateMember(relationship, sibling);
     if (!this.mom) throw new Error(`must have parent to have ${relationship}.`);
-    (this.mom as FamilyMember)._addChild(
+    this.mom._addChild(
       relationship === 'brother' ? 'son' : 'daughter',
       sibling,
     );
@@ -220,7 +216,7 @@ class FamilyMember {
       daughters: {},
     };
 
-    this.has = Object.freeze({
+    this._has = Object.freeze({
       disease: () => {
         this._phenotype = true;
       },
@@ -229,9 +225,8 @@ class FamilyMember {
       brother: (brother: FamilyMember) => this._hasSibling({ brother }),
       sister: (sister: FamilyMember) => this._hasSibling({ sister }),
     });
-    this.have = this.has;
 
-    this.doesNotHave = Object.freeze({
+    this._doesNotHave = Object.freeze({
       disease: () => {
         this._phenotype = false;
       },
@@ -240,9 +235,8 @@ class FamilyMember {
       brother: (brother: Id) => this._doesNotHaveSibling({ brother }),
       sister: (sister: Id) => this._doesNotHaveSibling({ sister }),
     });
-    this.doNotHave = this.doesNotHave;
 
-    this.mayHave = Object.freeze({
+    this._mayHave = Object.freeze({
       disease: () => {
         this._phenotype = null;
       },
@@ -345,6 +339,26 @@ class FamilyMember {
       dad &&
       Object.values(dad.daughters).filter((sister) => sister.id !== this.id)
     );
+  }
+
+  get has() {
+    return this._has;
+  }
+
+  get have() {
+    return this._has;
+  }
+
+  get doesNotHave() {
+    return this._doesNotHave;
+  }
+
+  get doNotHave() {
+    return this._doesNotHave;
+  }
+
+  get mayHave() {
+    return this._mayHave;
   }
 }
 
