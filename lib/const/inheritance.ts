@@ -4,7 +4,7 @@ const XLD = 'XLD';
 const XLR = 'XLR';
 const XL = 'XL';
 
-const inheritanceList = [AD, AR, XLD, XLR] as const;
+const inheritanceList = [AD, AR, XLD, XLR, XL] as const;
 const choices = new Set(inheritanceList);
 
 export type Inheritance = typeof inheritanceList[number];
