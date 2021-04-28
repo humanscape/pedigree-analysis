@@ -1,8 +1,8 @@
-const AD = 'AD';
-const AR = 'AR';
-const XLD = 'XLD';
-const XLR = 'XLR';
-const XL = 'XL';
+const AD = 'AD' as const;
+const AR = 'AR' as const;
+const XLD = 'XLD' as const;
+const XLR = 'XLR' as const;
+const XL = 'XL' as const;
 
 const inheritanceList = [AD, AR, XLD, XLR, XL] as const;
 const choices = new Set(inheritanceList);
