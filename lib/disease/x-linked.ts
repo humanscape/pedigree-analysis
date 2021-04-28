@@ -17,9 +17,9 @@ import type { FamilyMember } from '../family-member';
  * @class
  */
 class XLinkedDisease extends CommonDisease {
-  static _validGenotypes = genotypes.byGender;
+  static _validGenotypes = genotypes.X_LINKED;
 
-  static updateRangeFromParents = (
+  static _updateRangeFromParents = (
     [fatherRange, motherRange]: ParentRanges,
     childRange: DiseaseAlleleCountRange,
     { _isMale }: FamilyMember,
@@ -63,7 +63,7 @@ class XLinkedDisease extends CommonDisease {
       phenotype
         ? _isMale ||
           this._isDominant ||
-          this._inheritance === inheritances.X_SEMIDOMINANT
+          this._inheritance === inheritances.X_LINKED
           ? 1
           : 2
         : 0,
@@ -72,7 +72,7 @@ class XLinkedDisease extends CommonDisease {
     ] as DiseaseAlleleCountRange;
   };
 
-  _updateRangeFromParents = XLinkedDisease.updateRangeFromParents;
+  _updateRangeFromParents = XLinkedDisease._updateRangeFromParents;
 
   _updateRangeFromSon = XLinkedDisease._updateRangeFromSon;
 
@@ -82,7 +82,13 @@ class XLinkedDisease extends CommonDisease {
     [min, max]: DiseaseAlleleCountRange,
     { gender }: FamilyMember,
   ) => {
-    return XLinkedDisease._validGenotypes[gender].slice(min, max + 1);
+    max++; // exclusive
+    if (!this._isDominant) {
+      const temp = -max;
+      max = (-min || undefined) as number;
+      min = temp;
+    }
+    return XLinkedDisease._validGenotypes[gender].slice(min, max);
   };
 }
 

@@ -96,7 +96,7 @@ abstract class CommonDisease implements Disease {
   }
 
   hasDisease(genotype: Genotype) {
-    return this._isDominant === genotype.includes(genotypes.DOMINANT_ALLELE);
+    return this._isDominant === genotypes._hasDominantAllele(genotype);
   }
 }
 

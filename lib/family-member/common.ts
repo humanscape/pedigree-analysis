@@ -81,15 +81,33 @@ class FamilyMember {
 
   _relationships: Relationship;
 
-  has: Has;
+  _has: Has;
 
-  have: Has;
+  _doesNotHave: DoesNotHave;
 
-  doesNotHave: DoesNotHave;
+  _mayHave: { disease: () => void };
 
-  doNotHave: DoesNotHave;
+  static _getNearestMaleAncestorsOf(target: FamilyMember) {
+    const maleAncestors = [];
+    const father = target.dad;
+    if (father) {
+      maleAncestors.push(father);
+      const grandFather = (target.mom as FamilyMember).dad;
+      if (grandFather) maleAncestors.push(grandFather);
+    }
+    return maleAncestors;
+  }
 
-  mayHave: { disease: () => void };
+  static _getNearestFemaleAncestorsOf(target: FamilyMember) {
+    const femaleAncestors = [];
+    const mother = target.mom;
+    if (mother) {
+      femaleAncestors.push(mother);
+      const grandMother = (target.dad as FamilyMember).mom;
+      if (grandMother) femaleAncestors.push(grandMother);
+    }
+    return femaleAncestors;
+  }
 
   _validateMember(relationship: Child | Sibling, member: FamilyMember) {
     const { isMale, gender, getRelationship } = genderByRelationship[
@@ -117,6 +135,11 @@ class FamilyMember {
     if (!this.spouse)
       throw new Error(`cannot have ${relationship} before getting married.`);
 
+    [this, this.spouse].forEach((parent) => {
+      if (child.equals(parent) || parent.hasAncestor(child))
+        throw new Error('child cannot be one of its ancestors.');
+    });
+
     const { id } = child;
     this._relationships[`${relationship}s` as const][id] = child;
     if (this._isMale) {
@@ -138,8 +161,8 @@ class FamilyMember {
   }
 
   _deleteParents() {
-    this._relationships.mom = undefined;
-    this._relationships.dad = undefined;
+    delete this._relationships.mom;
+    delete this._relationships.dad;
   }
 
   _hasChild(childObject: { [relationship: string]: FamilyMember }) {
@@ -165,7 +188,7 @@ class FamilyMember {
 
     this._validateMember(relationship, sibling);
     if (!this.mom) throw new Error(`must have parent to have ${relationship}.`);
-    (this.mom as FamilyMember)._addChild(
+    this.mom._addChild(
       relationship === 'brother' ? 'son' : 'daughter',
       sibling,
     );
@@ -193,7 +216,7 @@ class FamilyMember {
       daughters: {},
     };
 
-    this.has = Object.freeze({
+    this._has = Object.freeze({
       disease: () => {
         this._phenotype = true;
       },
@@ -202,9 +225,8 @@ class FamilyMember {
       brother: (brother: FamilyMember) => this._hasSibling({ brother }),
       sister: (sister: FamilyMember) => this._hasSibling({ sister }),
     });
-    this.have = this.has;
 
-    this.doesNotHave = Object.freeze({
+    this._doesNotHave = Object.freeze({
       disease: () => {
         this._phenotype = false;
       },
@@ -213,9 +235,8 @@ class FamilyMember {
       brother: (brother: Id) => this._doesNotHaveSibling({ brother }),
       sister: (sister: Id) => this._doesNotHaveSibling({ sister }),
     });
-    this.doNotHave = this.doesNotHave;
 
-    this.mayHave = Object.freeze({
+    this._mayHave = Object.freeze({
       disease: () => {
         this._phenotype = null;
       },
@@ -223,15 +244,16 @@ class FamilyMember {
   }
 
   marry(spouse: FamilyMember) {
-    if (this.spouse)
-      throw new Error(
-        'pedigree analysis is not prepared for multiple marriages... divorce first in order to marry again.',
-      );
-
     if (!(spouse instanceof FamilyMember) || this._isMale === spouse._isMale)
       throw new Error(
         'spouse must be an instance of FamilyMember with different gender for pedigree analysis.',
       );
+
+    if (this.spouse || spouse.spouse)
+      throw new Error(
+        'pedigree analysis is not prepared for multiple marriages... divorce first in order to marry again.',
+      );
+
     this._relationships.spouse = spouse;
     spouse._relationships.spouse = this;
     spouse._relationships.sons = this.sons; // share reference
@@ -253,6 +275,24 @@ class FamilyMember {
       _relationships.daughters = {};
       _relationships.spouse = undefined;
     });
+  }
+
+  hasAncestor(ancestor: FamilyMember) {
+    const getNearestAncestorsOf =
+      FamilyMember[
+        `_getNearest${ancestor._isMale ? 'Male' : 'Female'}AncestorsOf` as const
+      ];
+    const stack = [];
+    let target: FamilyMember = this;
+    while (stack.push(...getNearestAncestorsOf(target))) {
+      target = stack.pop() as FamilyMember;
+      if (ancestor.equals(target)) return true;
+    }
+    return false;
+  }
+
+  equals(member: FamilyMember) {
+    return this._id === member._id;
   }
 
   get id() {
@@ -280,11 +320,11 @@ class FamilyMember {
   }
 
   get sons() {
-    return this._relationships.sons;
+    return { ...this._relationships.sons };
   }
 
   get daughters() {
-    return this._relationships.daughters;
+    return { ...this._relationships.daughters };
   }
 
   get brothers() {
@@ -300,6 +340,26 @@ class FamilyMember {
       dad &&
       Object.values(dad.daughters).filter((sister) => sister.id !== this.id)
     );
+  }
+
+  get has() {
+    return this._has;
+  }
+
+  get have() {
+    return this._has;
+  }
+
+  get doesNotHave() {
+    return this._doesNotHave;
+  }
+
+  get doNotHave() {
+    return this._doesNotHave;
+  }
+
+  get mayHave() {
+    return this._mayHave;
   }
 }
 
